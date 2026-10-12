@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Servlet User Management System | Practical Record Prototype</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-users-gear"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>User Management System</h1>
+                    <span class="badge prototype-badge"><i class="fa-solid fa-flask"></i> Java Servlet Practical Prototype</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="server-status">
+                    <span class="status-indicator online"></span>
+                    <span class="status-text">Servlet Online (Port 8080)</span>
+                </div>
+                <button id="themeToggle" class="btn btn-icon" title="Toggle Dark/Light Mode">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats Overview Cards -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon total"><i class="fa-solid fa-user-group"></i></div>
+                <div class="stat-details">
+                    <span class="stat-title">Total Users</span>
+                    <span class="stat-value" id="totalUsersCount">0</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon active"><i class="fa-solid fa-user-check"></i></div>
+                <div class="stat-details">
+                    <span class="stat-title">Active Users</span>
+                    <span class="stat-value" id="activeUsersCount">0</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon inactive"><i class="fa-solid fa-user-slash"></i></div>
+                <div class="stat-details">
+                    <span class="stat-title">Inactive Users</span>
+                    <span class="stat-value" id="inactiveUsersCount">0</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon storage"><i class="fa-solid fa-database"></i></div>
+                <div class="stat-details">
+                    <span class="stat-title">Storage DAO Mode</span>
+                    <span class="stat-value text-sm" id="storageModeText">In-Memory DAO</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Area: Form & Table -->
+        <main class="main-layout">
+            <!-- User Form Card -->
+            <section class="card form-card">
+                <div class="card-header">
+                    <h2 id="formTitle"><i class="fa-solid fa-user-plus"></i> Create New User</h2>
+                    <button id="resetFormBtn" class="btn btn-sm btn-ghost" style="display:none;" onclick="resetForm()">
+                        <i class="fa-solid fa-rotate-left"></i> Cancel Edit
+                    </button>
+                </div>
+                <form id="userForm" onsubmit="handleFormSubmit(event)">
+                    <input type="hidden" id="userId" value="">
+                    
+                    <div class="form-group">
+                        <label for="userName"><i class="fa-solid fa-signature"></i> Full Name</label>
+                        <input type="text" id="userName" placeholder="e.g. John Doe" required autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userEmail"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                        <input type="email" id="userEmail" placeholder="e.g. john.doe@university.edu" required autocomplete="off">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="userRole"><i class="fa-solid fa-user-shield"></i> Role</label>
+                            <select id="userRole">
+                                <option value="Student">Student</option>
+                                <option value="Faculty">Faculty</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="userStatus"><i class="fa-solid fa-toggle-on"></i> Status</label>
+                            <select id="userStatus">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" id="submitBtn" class="btn btn-primary btn-block">
+                            <i class="fa-solid fa-paper-plane"></i> Save User Details
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Prototype Info box for faculty demo -->
+                <div class="info-banner">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <div>
+                        <strong>Servlet Architecture Note:</strong>
+                        <p>Requests are processed by <code>UserServlet.java</code> executing standard <code>doGet()</code>, <code>doPost()</code>, <code>doPut()</code>, and <code>doDelete()</code> lifecycle methods.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- User List Table Card -->
+            <section class="card table-card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-table-list"></i> Registered Users Table</h2>
+                    <div class="table-tools">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="searchInput" placeholder="Search name or email..." onkeyup="filterUsers()">
+                        </div>
+                        <button class="btn btn-secondary btn-icon-text" onclick="loadUsers()">
+                            <i class="fa-solid fa-arrows-rotate"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <!-- Dynamic user rows populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <h3>No Users Found</h3>
+                    <p>Add a new user using the form on the left.</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Servlet API Live Console section for faculty verification -->
+        <section class="card api-console-card">
+            <div class="card-header">
+                <h2><i class="fa-solid fa-terminal"></i> Live Java Servlet API Inspector (Faculty Viva Console)</h2>
+                <div class="api-method-badges">
+                    <span class="badge get">GET /users</span>
+                    <span class="badge post">POST /users</span>
+                    <span class="badge put">PUT /users</span>
+                    <span class="badge delete">DELETE /users</span>
+                </div>
+            </div>
+            <div class="console-body">
+                <div class="console-actions">
+                    <button class="btn btn-outline btn-sm" onclick="testApiGet()"><i class="fa-solid fa-play"></i> Test GET All Users</button>
+                    <button class="btn btn-outline btn-sm" onclick="testApiPost()"><i class="fa-solid fa-play"></i> Test POST Create User</button>
+                </div>
+                <pre id="apiConsoleOutput" class="console-output">// Live JSON responses returned by UserServlet will appear here...</pre>
+            </div>
+        </section>
+
+        <!-- Toast Notifications Container -->
+        <div id="toastContainer" class="toast-container"></div>
+    </div>
+
+    <!-- JavaScript logic -->
+    <script src="js/app.js"></script>
+</body>
+</html>
